@@ -1,0 +1,79 @@
+.users-page {
+  position: fixed;   /* вместо relative */
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.background-image {
+  position: absolute;
+  inset: 0;
+  background-image: url("https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1600&q=80");
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.4) blur(4px);
+  z-index: 1;
+}
+
+.users-table-container {
+  position: relative;
+  z-index: 5;
+  background: rgba(20, 0, 30, 0.85);
+  border: 1px solid #ff79c6;
+  border-radius: 16px;
+  padding: 30px 40px;
+  box-shadow: 0 0 40px rgba(255, 121, 198, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.table-title {
+  text-align: center;
+  color: #ff79c6;
+  margin-bottom: 20px;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+}
+
+.users-table th {
+  text-align: left;
+  color: #ff79c6;
+  border-bottom: 2px solid #ff79c6;
+  padding: 10px;
+}
+
+.users-table td {
+  padding: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.users-table tr:hover td {
+  background-color: rgba(255, 121, 198, 0.1);
+}
+
+.delete-btn {
+    background: rgba(255, 50, 80, 0.15);
+    border: 1px solid rgba(255, 50, 80, 0.4);
+    color: #ff4d6d;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: 0.25s;
+}
+
+.delete-btn:hover {
+    background: rgba(255, 50, 80, 0.35);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 50, 80, 0.6);
+}
+

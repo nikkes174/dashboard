@@ -1,0 +1,93 @@
+/* Фон */
+body {
+    margin: 0;
+    padding: 0;
+    background: #060010;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+/* Фон лазера */
+#laserflow {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+}
+
+/* Контейнер формы — СТРОГО ПО ЦЕНТРУ */
+.login-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Идеальный центр */
+    width: 450px; /* ← ШИРИНА ФОРМЫ */
+    max-width: 90%; /* ← Ограничение для маленьких экранов */
+    z-index: 10; /* выше лазера */
+    padding: 0;
+}
+
+/* Электрическая рамка (здесь только фоновые параметры) */
+.electric-border {
+    padding: 20px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.45);
+    width: 100%;
+    display: block;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+/* Заголовок */
+.login-title {
+    text-align: center;
+    color: #fff;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+/* Поля ввода */
+.input-field {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: none;
+    background: #2c292b;
+    color: #ea0e0e;
+    font-size: 15px;
+    font-weight: 700;
+    box-sizing: border-box;
+}
+
+/* Обычная кнопка (не используется, но оставлена) */
+.neon-button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 8px;
+    background: #ff79c6;
+    color: black;
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.neon-button:hover {
+    background: #ff97d7;
+    box-shadow: 0 0 10px #ff79c6;
+}
+
+/* Ошибки */
+.error-text {
+    margin-top: 10px;
+    color: #ff5f94;
+    text-align: center;
+    min-height: 20px;
+    font-size: 14px;
+}
+.eb-content {
+    width: 100%;
+    box-sizing: border-box;
+}

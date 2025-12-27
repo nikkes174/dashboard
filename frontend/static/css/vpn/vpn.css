@@ -1,0 +1,375 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: black;
+    min-height: 100vh;
+    color: white;
+}
+
+.users-wrapper {
+    display: flex;
+    justify-content: center;
+    padding-top: 60px;
+}
+
+.users-card {
+    background: rgba(20, 0, 30, 0.85);
+    border: 1px solid #ff79c6;
+    border-radius: 16px;
+    padding: 25px 35px;
+    width: 800px;
+    box-shadow: 0 0 30px rgba(255, 121, 198, 0.5);
+    backdrop-filter: blur(6px);
+}
+
+.title {
+    text-align: center;
+    color: #FF79C6;
+}
+
+.search-box {
+    margin-bottom: 18px;
+    text-align: center;
+}
+
+.search-box input {
+    padding: 10px 15px;
+    width: 220px;
+    border-radius: 8px;
+    border: 1px solid #ff79c6;
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+}
+
+.page-btn {
+    padding: 8px 15px;
+    border-radius: 6px;
+    background: #FF79C6;
+    border: none;
+    cursor: pointer;
+    color: black;
+    font-weight: bold;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.users-table th {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 2px solid #ff79c6;
+    color: #ff79c6;
+}
+
+.users-table td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.users-table tr:hover td {
+    background: rgba(255, 121, 198, 0.08);
+}
+
+.delete-btn {
+    background: rgba(255, 50, 80, 0.15);
+    border: 1px solid rgba(255, 50, 80, 0.4);
+    color: #ff4d6d;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: rgba(255, 50, 80, 0.35);
+    color: white;
+}
+
+.pagination {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    color: white;
+}
+
+.top-bar {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 20;
+}
+
+.logout-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    background: #ff4d6d;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1px solid rgba(255, 50, 80, 0.6);
+    box-shadow: 0 0 12px rgba(255, 50, 80, 0.4);
+    transition: 0.25s;
+}
+
+.logout-btn:hover {
+    background: #ff6f8a;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 50, 80, 0.7);
+}
+
+#bg-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 121, 198, 0.6);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+  font-weight: bold;
+}
+
+.tab-btn.active {
+  background: #ff79c6;
+  color: black;
+}
+
+.modal.hidden { display: none; }
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-content {
+  width: 900px;
+  max-width: 95vw;
+  background: rgba(20, 0, 30, 0.92);
+  border: 1px solid #ff79c6;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 0 35px rgba(255, 121, 198, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #ff79c6;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.add-link {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.add-link input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ff79c6;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+/* === красивые инпуты в модалке Links === */
+.link-edit,
+.user-edit {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+
+  border: 1px solid rgba(255, 121, 198, 0.35);
+  outline: none;
+
+  font-size: 14px;
+  transition: 0.2s ease;
+  box-shadow: inset 0 0 10px rgba(255, 121, 198, 0.08);
+}
+
+/* при фокусе — подсветка */
+.link-edit:focus,
+.user-edit:focus {
+  border-color: rgba(255, 121, 198, 0.9);
+  box-shadow: 0 0 14px rgba(255, 121, 198, 0.35),
+              inset 0 0 10px rgba(255, 121, 198, 0.15);
+  background: rgba(255, 255, 255, 0.10);
+}
+
+/* плейсхолдер тоже нормальный */
+.link-edit::placeholder,
+.user-edit::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* чтобы user_id не выглядел как “коробка” */
+.user-edit {
+  width: 90px; /* вместо inline style="width:80px" */
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+/* контейнер вокруг таблицы в модалке */
+.links-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+/* чтобы таблица не пыталась ужаться */
+.links-table {
+  min-width: 700px; /* можно 600-800 подобрать */
+  border-collapse: collapse;
+}
+/* ===============================
+   MOBILE TABLE -> CARDS
+   works for both users-table and linksTable
+================================ */
+
+@media (max-width: 720px) {
+
+  /* скрываем заголовок таблицы */
+  .users-table thead {
+    display: none;
+  }
+
+  /* делаем таблицу блочной */
+  .users-table,
+  .users-table tbody,
+  .users-table tr,
+  .users-table td {
+    display: block;
+    width: 100%;
+  }
+
+  /* каждая строка -> карточка */
+  .users-table tr {
+    margin-bottom: 12px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 121, 198, 0.25);
+    box-shadow: 0 0 12px rgba(255, 121, 198, 0.07);
+  }
+
+  /* каждая ячейка */
+  .users-table td {
+    padding: 8px 0;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* подпись слева (берём из data-label) */
+  .users-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    opacity: 0.75;
+    font-size: 12px;
+    flex: 0 0 44%;
+  }
+
+  /* контент справа */
+  .users-table td > * {
+    flex: 1;
+    text-align: right;
+  }
+
+  /* чтобы input не растягивал карточку */
+  .link-edit {
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    text-align: right;
+  }
+
+  .user-edit {
+    width: 90px;
+    text-align: center;
+  }
+
+  /* кнопки в actions */
+  .users-table td:last-child {
+    justify-content: flex-end;
+  }
+
+  /* кнопки меньше */
+  .page-btn, .delete-btn {
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+
+  /* поиск и add-link в модалке компактнее */
+  .add-link {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .add-link input {
+    width: 100%;
+  }
+
+  .search-box {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-box input {
+    width: 100%;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+@media (max-width: 720px) {
+  .users-table td[data-label="Actions"] button {
+    margin-left: 8px;
+  }
+}

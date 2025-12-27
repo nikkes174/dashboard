@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>VPN Dashboard</title>
+
+    <!-- Внешний CSS -->
+    <link rel="stylesheet" href="/static/css/vpn/vpn.css">
+</head>
+
+<body>
+<video id="bg-video" autoplay muted loop playsinline>
+    <source src="/static/pic/vpn.mp4" type="video/mp4">
+</video>
+
+<div class="top-bar">
+    <a href="/auth/logout" class="logout-btn">Выйти</a>
+</div>
+<div class="users-wrapper">
+    <div class="users-card">
+
+        <h2 class="title">VPN — пользователи</h2>
+        <div class="tabs">
+            <button class="tab-btn active" id="tabUsers">Users</button>
+            <button class="tab-btn" id="tabLinks">Links</button>
+        </div>
+        <!-- Поиск -->
+        <form class="search-box" method="GET">
+            <input type="text" name="search" placeholder="Поиск по ID..."
+                   value="{{ search|default('') }}">
+            <button class="page-btn" type="submit">Найти</button>
+        </form>
+
+        <!-- Таблица -->
+        <table class="users-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Пользователь</th>
+                <th>Конец подписки</th>
+                <th>Конец пробного периода</th>
+                <th>Удалить</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for user in users %}
+            <tr>
+                <td data-label="ID">{{ user.user_id }}</td>
+                <td data-label="Пользователь">{{ user.username }}</td>
+                <td data-label="Конец подписки">{{ user.end_date }}</td>
+                <td data-label="Конец пробного">{{ user.trial_end }}</td>
+                <td data-label="Удалить">
+                    <form method="POST" action="/vpn/delete/{{ user.user_id }}">
+                        <button class="delete-btn">✖</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+
+        </table>
+        <div id="linksModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Links</h3>
+                    <button id="closeLinksModal" class="close-btn">✖</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="add-link">
+                        <input id="newLinkAddress" placeholder="https://example.com/..."/>
+                        <button id="addLinkBtn" class="page-btn">Добавить</button>
+                    </div>
+                    <div class="search-box" style="margin: 10px 0;">
+                        <input type="number" id="linksSearchUserId" placeholder="Поиск по User ID..."/>
+                        <button class="page-btn" type="button" id="linksSearchBtn">Найти</button>
+                        <button class="page-btn" type="button" id="linksResetBtn">Сброс</button>
+                    </div>
+
+                    <!-- Пагинация links -->
+                    <div class="pagination" id="linksPagination"
+                         style="margin: 10px 0; display:flex; justify-content:center; gap:12px;">
+                    </div>
+                    <table class="users-table" id="linksTable">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Link</th>
+                            <th>User ID</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="linksTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="pagination">
+            {% if page > 1 %}
+            <a href="?page={{ page - 1 }}&search={{ search }}">
+                <button class="page-btn">⬅ Назад</button>
+            </a>
+            {% endif %}
+
+            <span>Страница {{ page }} из {{ total_pages }}</span>
+
+            {% if page < total_pages %}
+            <a href="?page={{ page + 1 }}&search={{ search }}">
+                <button class="page-btn">Вперёд ➡</button>
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+<script>
+    const tabLinks = document.getElementById("tabLinks");
+    const tabUsers = document.getElementById("tabUsers");
+
+    const modal = document.getElementById("linksModal");
+    const closeBtn = document.getElementById("closeLinksModal");
+    const linksTbody = document.getElementById("linksTbody");
+
+    const newLinkAddress = document.getElementById("newLinkAddress");
+    const addLinkBtn = document.getElementById("addLinkBtn");
+
+    // ✅ Новые элементы для поиска и пагинации
+    const linksPagination = document.getElementById("linksPagination");
+    const linksSearchUserId = document.getElementById("linksSearchUserId");
+    const linksSearchBtn = document.getElementById("linksSearchBtn");
+    const linksResetBtn = document.getElementById("linksResetBtn");
+
+    // ✅ состояние модалки
+    let linksPage = 1;
+    let linksSearchValue = "";
+    const linksPerPage = 10;
+
+    function openModal() {
+        modal.classList.remove("hidden");
+        linksPage = 1;
+        loadLinks();
+    }
+
+    function displayLinkShort(link) {
+        if (!link) return "";
+        const hashIndex = link.lastIndexOf("#");
+        if (hashIndex === -1) return link;
+        return decodeURIComponent(link.slice(hashIndex + 1));
+    }
+
+    function closeModal() {
+        modal.classList.add("hidden");
+
+        // ✅ всегда возвращаемся на Users
+        tabUsers.classList.add("active");
+        tabLinks.classList.remove("active");
+    }
+
+    tabLinks.addEventListener("click", () => {
+        tabLinks.classList.add("active");
+        tabUsers.classList.remove("active");
+        openModal();
+    });
+
+    tabUsers.addEventListener("click", () => {
+        closeModal();
+    });
+
+    closeBtn.addEventListener("click", closeModal);
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // ✅ загрузка links с пагинацией и фильтром
+    async function loadLinks() {
+        linksTbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+
+        let url = `/vpn/links?page=${linksPage}&per_page=${linksPerPage}`;
+        if (linksSearchValue) {
+            url += `&user_id=${encodeURIComponent(linksSearchValue)}`;
+        }
+
+        const res = await fetch(url);
+
+        if (!res.ok) {
+            linksTbody.innerHTML = "<tr><td colspan='4'>Ошибка загрузки</td></tr>";
+            linksPagination.innerHTML = "";
+            return;
+        }
+
+        const data = await res.json();
+        const links = data.items || [];
+
+        linksTbody.innerHTML = "";
+
+        if (links.length === 0) {
+            linksTbody.innerHTML = "<tr><td colspan='4'>Нет ссылок</td></tr>";
+        } else {
+            links.forEach(l => {
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+  <td data-label="ID">${l.id}</td>
+  <td data-label="Link">
+    <input value="${displayLinkShort(l.link_address)}" data-id="${l.id}" class="link-edit" />
+  </td>
+  <td data-label="User ID">
+    <input value="${l.user_id ?? ""}" data-id="${l.id}" class="user-edit"/>
+  </td>
+  <td data-label="Actions">
+    <button class="page-btn" onclick="saveLink(${l.id})">💾</button>
+    <button class="delete-btn" onclick="removeLink(${l.id})">✖</button>
+  </td>
+`;
+
+                linksTbody.appendChild(tr);
+            });
+        }
+
+        renderLinksPagination(data.page, data.total_pages);
+    }
+
+    // ✅ рисуем пагинацию
+    function renderLinksPagination(page, totalPages) {
+        linksPagination.innerHTML = "";
+
+        if (!totalPages || totalPages <= 1) return;
+
+        if (page > 1) {
+            const backBtn = document.createElement("button");
+            backBtn.className = "page-btn";
+            backBtn.textContent = "⬅ Назад";
+            backBtn.onclick = () => {
+                linksPage--;
+                loadLinks();
+            };
+            linksPagination.appendChild(backBtn);
+        }
+
+        const info = document.createElement("span");
+        info.style.alignSelf = "center";
+        info.textContent = `Страница ${page} из ${totalPages}`;
+        linksPagination.appendChild(info);
+
+        if (page < totalPages) {
+            const nextBtn = document.createElement("button");
+            nextBtn.className = "page-btn";
+            nextBtn.textContent = "Вперёд ➡";
+            nextBtn.onclick = () => {
+                linksPage++;
+                loadLinks();
+            };
+            linksPagination.appendChild(nextBtn);
+        }
+    }
+
+    // ✅ поиск по user_id
+    linksSearchBtn.addEventListener("click", () => {
+        linksSearchValue = linksSearchUserId.value.trim();
+        linksPage = 1;
+        loadLinks();
+    });
+
+    // ✅ сброс поиска
+    linksResetBtn.addEventListener("click", () => {
+        linksSearchUserId.value = "";
+        linksSearchValue = "";
+        linksPage = 1;
+        loadLinks();
+    });
+
+    async function saveLink(id) {
+        const linkInput = document.querySelector(`.link-edit[data-id='${id}']`);
+        const userInput = document.querySelector(`.user-edit[data-id='${id}']`);
+
+        const payload = {
+            link_address: linkInput.value.trim(),
+            user_id: userInput.value.trim() === "" ? null : Number(userInput.value.trim())
+        };
+
+        const res = await fetch(`/vpn/links/${id}`, {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({detail: "Ошибка сохранения"}));
+            alert(err.detail || "Ошибка сохранения");
+            return;
+        }
+
+        loadLinks();
+    }
+
+    // ✅ удалить ссылку
+    async function removeLink(id) {
+        await fetch(`/vpn/links/${id}`, {method: "DELETE"});
+        loadLinks();
+    }
+
+    // ✅ добавить ссылку
+    addLinkBtn.addEventListener("click", async () => {
+        const payload = {
+            link_address: newLinkAddress.value.trim(),
+            user_id: null
+        };
+
+        if (!payload.link_address) return;
+
+        await fetch("/vpn/links", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload)
+        });
+
+        newLinkAddress.value = "";
+        linksPage = 1;
+        loadLinks();
+    });
+
+    // чтобы onclick работал
+    window.saveLink = saveLink;
+    window.removeLink = removeLink;
+</script>
+
+
+</body>
+</html>

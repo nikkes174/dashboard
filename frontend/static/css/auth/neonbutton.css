@@ -1,0 +1,67 @@
+.neon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 20px;
+  font-size: 1.1rem;
+  color: #fff;
+  background: #120020;
+  border: 2px solid #ff79c6;
+  border-radius: 10px;
+  cursor: pointer;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 0 10px #ff79c680, inset 0 0 10px #ff79c640;
+}
+
+.neon-btn:hover {
+  background: #ff79c620;
+  box-shadow: 0 0 25px #ff79c6cc, inset 0 0 15px #ff79c620;
+}
+
+.neon-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 0 25px #ff79c6ff, inset 0 0 25px #ff79c650;
+}
+
+/* Текст с лёгким свечением */
+.neon-text {
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 0 8px #ff79c6, 0 0 16px #ff79c6aa;
+}
+
+/* Вспышка при клике */
+.neon-btn.active .neon-glow {
+  animation: flash 0.3s ease-out forwards;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 40px #ff79c6;
+  }
+  100% {
+    opacity: 0;
+    box-shadow: none;
+  }
+}
+
+/* Фоновая пульсация */
+.neon-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle, #ff79c6 10%, transparent 70%);
+  opacity: 0.2;
+  animation: pulse 3s infinite ease-in-out;
+  z-index: 1;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.2; }
+  50% { transform: scale(1.1); opacity: 0.4; }
+}

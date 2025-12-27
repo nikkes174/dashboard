@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход в DashboardVPN</title>
+
+    <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/css/auth/auth.css">
+    <link rel="stylesheet" href="/static/css/auth/laserflow.css">
+    <link rel="stylesheet" href="/static/css/auth/neonbutton.css">
+    <link rel="stylesheet" href="/static/css/auth/electricborder.css">
+</head>
+
+<body>
+
+
+<div id="laserflow" class="laser-flow-container"></div>
+
+<div class="login-wrapper">
+
+    <form method="POST" action="/auth/login" class="electric-border">
+
+        <div class="eb-content">
+
+            <input id="username" name="username" type="text"
+                   placeholder="Логин" class="input-field">
+
+            <input id="password" name="password" type="password"
+                   placeholder="Пароль" class="input-field">
+
+            <p id="error" class="error-text"></p>
+
+            <button id="loginBtn" type="submit" class="neon-btn">
+                <span class="neon-text">Войти</span>
+                <span class="neon-glow"></span>
+                <span class="neon-pulse"></span>
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+<!-- JS -->
+<script type="module" src="/static/js/auth/shader.js"></script>
+<script type="module" src="/static/js/auth/laserflow.js"></script>
+<script src="/static/js/auth/electricborder.js"></script>
+
+<script type="module">
+    import {initLaserFlow} from "/static/js/auth/laserflow.js";
+
+    initLaserFlow(document.getElementById("laserflow"), {
+        color: "#FF79C6"
+    });
+
+    // только анимация кнопки
+    document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.getElementById("loginBtn");
+
+        btn.addEventListener("click", () => {
+            btn.classList.add("active");
+            setTimeout(() => btn.classList.remove("active"), 300);
+        });
+    });
+
+    initElectricBorder(
+        document.querySelector(".electric-border"),
+        {
+            color: "#ff79c6",
+            speed: 1,
+            chaos: 1,
+            thickness: 2
+        }
+    );
+</script>
+
+</body>
+</html>
