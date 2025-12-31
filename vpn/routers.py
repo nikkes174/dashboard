@@ -8,6 +8,7 @@ from starlette.status import HTTP_303_SEE_OTHER
 
 from vpn.db_services import VPNDatabase, VPNUtils
 from vpn.models import LinkModel, VPNUser
+from vpn.send_message import SendMessageIn, tg_send_message
 
 router = APIRouter(prefix="/vpn", tags=["VPN"])
 templates = Jinja2Templates(directory="frontend/templates")
@@ -24,11 +25,9 @@ async def vpn_page(request: Request, page: int = 1, search: str = ""):
     utils = VPNUtils()
     users = await utils.get_users_list()
 
-    # Поиск по ID
     if search:
         users = [u for u in users if search in str(u["user_id"])]
 
-    # Пагинация
     page_size = 10
     total_pages = max(1, -(-len(users) // page_size))
 
@@ -83,7 +82,6 @@ async def get_links(
     db = VPNDatabase()
     async for session in db.get_session():
 
-        # базовый фильтр
         base_stmt = select(LinkModel)
         count_stmt = select(func.count(LinkModel.id))
 
@@ -215,3 +213,21 @@ async def delete_link(request: Request, link_id: int):
 
         await session.commit()
         return {"success": True}
+
+@router.post("/send_message")
+async def send_message(request: Request, payload: SendMessageIn):
+    _check_vpn_auth(request)
+
+    sent = 0
+    failed = 0
+    errors = []
+
+    for chat_id in payload.user_ids:
+        try:
+            await tg_send_message(chat_id, payload.text)
+            sent += 1
+        except Exception as e:
+            failed += 1
+            errors.append({"chat_id": chat_id, "error": str(e)})
+
+    return {"sent": sent, "failed": failed, "errors": errors}

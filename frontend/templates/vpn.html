@@ -24,6 +24,9 @@
             <button class="tab-btn active" id="tabUsers">Users</button>
             <button class="tab-btn" id="tabLinks">Links</button>
         </div>
+        <div style="margin: 12px 0; display: flex; justify-content: flex-end;">
+            <button type="button" class="page-btn" id="openSendMsgModalBtn">✉️ Отправить сообщение</button>
+        </div>
         <!-- Поиск -->
         <form class="search-box" method="GET">
             <input type="text" name="search" placeholder="Поиск по ID..."
@@ -96,6 +99,28 @@
                 </div>
             </div>
         </div>
+        <div id="sendMsgModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>✉️ Отправить сообщение</h3>
+                    <button id="closeSendMsgModal" class="close-btn">✖</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="add-link" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                        <label style="font-size: 14px; opacity: 0.85;">User ID (один или несколько)</label>
+                        <textarea id="sendMsgUserIds" rows="3"
+                                  placeholder="Например: 12345, 67890 или с новой строки"></textarea>
+
+                        <label style="font-size: 14px; opacity: 0.85;">Текст сообщения</label>
+                        <textarea id="sendMsgText" rows="5"
+                                  placeholder="Введите сообщение..."></textarea>
+
+                        <button id="sendMsgBtn" class="page-btn">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 
         <div class="pagination">
@@ -123,6 +148,13 @@
     const modal = document.getElementById("linksModal");
     const closeBtn = document.getElementById("closeLinksModal");
     const linksTbody = document.getElementById("linksTbody");
+    // ✅ Send Message modal elements
+    const openSendMsgModalBtn = document.getElementById("openSendMsgModalBtn");
+    const sendMsgModal = document.getElementById("sendMsgModal");
+    const closeSendMsgModalBtn = document.getElementById("closeSendMsgModal");
+    const sendMsgUserIds = document.getElementById("sendMsgUserIds");
+    const sendMsgText = document.getElementById("sendMsgText");
+    const sendMsgBtn = document.getElementById("sendMsgBtn");
 
     const newLinkAddress = document.getElementById("newLinkAddress");
     const addLinkBtn = document.getElementById("addLinkBtn");
@@ -159,6 +191,16 @@
         tabLinks.classList.remove("active");
     }
 
+    function openSendMsgModal() {
+        sendMsgModal.classList.remove("hidden");
+        sendMsgUserIds.value = "";
+        sendMsgText.value = "";
+    }
+
+    function closeSendMsgModal() {
+        sendMsgModal.classList.add("hidden");
+    }
+
     tabLinks.addEventListener("click", () => {
         tabLinks.classList.add("active");
         tabUsers.classList.remove("active");
@@ -170,6 +212,50 @@
     });
 
     closeBtn.addEventListener("click", closeModal);
+openSendMsgModalBtn.addEventListener("click", openSendMsgModal);
+closeSendMsgModalBtn.addEventListener("click", closeSendMsgModal);
+
+sendMsgModal.addEventListener("click", (e) => {
+    if (e.target === sendMsgModal) closeSendMsgModal();
+});
+
+sendMsgBtn.addEventListener("click", async () => {
+    const rawIds = sendMsgUserIds.value.trim();
+    const text = sendMsgText.value.trim();
+
+    if (!rawIds || !text) {
+        alert("Заполни user_id и текст сообщения");
+        return;
+    }
+
+    const user_ids = rawIds
+        .split(/[\s,]+/)
+        .map(x => x.trim())
+        .filter(Boolean)
+        .map(Number)
+        .filter(n => !isNaN(n));
+
+    if (user_ids.length === 0) {
+        alert("Не удалось распознать user_id");
+        return;
+    }
+
+    const res = await fetch("/vpn/send_message", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({user_ids, text})
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({detail: "Ошибка"}));
+        alert(err.detail || "Ошибка отправки");
+        return;
+    }
+
+    const data = await res.json();
+    alert(`Отправлено: ${data.sent}, ошибок: ${data.failed}`);
+    closeSendMsgModal();
+});
 
     modal.addEventListener("click", (e) => {
         if (e.target === modal) closeModal();
@@ -206,13 +292,14 @@
                 tr.innerHTML = `
   <td data-label="ID">${l.id}</td>
   <td data-label="Link">
-    <input value="${displayLinkShort(l.link_address)}" data-id="${l.id}" class="link-edit" />
+    <input value="${l.link_address}" data-id="${l.id}" class="link-edit" />
   </td>
   <td data-label="User ID">
     <input value="${l.user_id ?? ""}" data-id="${l.id}" class="user-edit"/>
   </td>
   <td data-label="Actions">
     <button class="page-btn" onclick="saveLink(${l.id})">💾</button>
+    <button class="page-btn" onclick="openSendMsgModal(${l.user_id ?? "null"})">✉️</button>
     <button class="delete-btn" onclick="removeLink(${l.id})">✖</button>
   </td>
 `;
@@ -297,6 +384,46 @@
         loadLinks();
     }
 
+    sendMsgBtn.addEventListener("click", async () => {
+        const rawIds = sendMsgUserIds.value.trim();
+        const text = sendMsgText.value.trim();
+
+        if (!rawIds || !text) {
+            alert("Заполни user_id и текст");
+            return;
+        }
+
+        // поддержка: "123,456", "123 456", "123\n456"
+        const user_ids = rawIds
+                .split(/[\s,]+/)
+                .map(x => x.trim())
+                .filter(Boolean)
+                .map(Number)
+                .filter(n => !isNaN(n));
+
+        if (user_ids.length === 0) {
+            alert("Не удалось распознать user_id");
+            return;
+        }
+
+        const res = await fetch("/vpn/send_message", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ chat_ids: user_ids, text })
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({detail: "Ошибка"}));
+            alert(err.detail || "Ошибка отправки");
+            return;
+        }
+
+        const data = await res.json();
+        alert(`Отправлено: ${data.sent}, ошибок: ${data.failed}`);
+
+        closeSendMsgModal();
+    });
+
     // ✅ удалить ссылку
     async function removeLink(id) {
         await fetch(`/vpn/links/${id}`, {method: "DELETE"});
@@ -323,9 +450,10 @@
         loadLinks();
     });
 
-    // чтобы onclick работал
     window.saveLink = saveLink;
     window.removeLink = removeLink;
+    window.openSendMsgModal = openSendMsgModal;
+
 </script>
 
 
